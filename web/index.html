@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#111827">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="apple-touch-icon" href="/icon.svg">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <title>Scientific Translator</title>
+  <style>
+    *{box-sizing:border-box} body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:#f3f4f6;color:#111827}
+    .app{max-width:760px;margin:auto;padding:24px 16px 48px}.card{background:#fff;border-radius:18px;padding:22px;box-shadow:0 8px 30px #00000012}
+    h1{margin:0 0 5px;font-size:28px}.sub{margin:0 0 22px;color:#6b7280}.drop{border:2px dashed #cbd5e1;border-radius:14px;padding:26px;text-align:center;background:#f8fafc}
+    input[type=file]{width:100%}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}.field label{display:block;font-size:13px;font-weight:700;margin-bottom:6px}
+    select,textarea{width:100%;padding:12px;border:1px solid #d1d5db;border-radius:10px;background:white;font:inherit}textarea{min-height:92px;resize:vertical}.checks{display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:14px;margin:12px 0 18px}
+    button{width:100%;border:0;border-radius:12px;padding:14px;font-size:16px;font-weight:800;background:#111827;color:white;cursor:pointer}.status{margin-top:18px;padding:14px;border-radius:12px;background:#f9fafb;display:none}
+    .bar{height:8px;background:#e5e7eb;border-radius:99px;overflow:hidden;margin-top:9px}.fill{height:100%;width:0;background:#111827;transition:width .25s}.downloads{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.downloads a{padding:9px 12px;background:#eef2ff;border-radius:9px;text-decoration:none;color:#1e3a8a;font-weight:700}
+    @media(max-width:560px){.grid,.checks{grid-template-columns:1fr}.card{padding:18px}h1{font-size:24px}}
+  </style>
+</head>
+<body>
+<div class="app"><div class="card">
+  <h1>Scientific Translator</h1>
+  <p class="sub">Dịch tài liệu khoa học với lớp bảo vệ công thức, số liệu, ký hiệu và cấu trúc.</p>
+  <form id="form">
+    <div class="drop"><input id="file" name="file" type="file" required accept=".pdf,.docx,.txt,.md,.png,.jpg,.jpeg,.pptx,.xlsx"></div>
+    <div class="grid">
+      <div class="field"><label>Ngôn ngữ nguồn</label><select name="source_language"><option value="auto">Tự động phát hiện</option><option value="en">English</option><option value="vi">Tiếng Việt</option><option value="zh">中文</option><option value="ja">日本語</option><option value="ko">한국어</option><option value="de">Deutsch</option><option value="fr">Français</option></select></div>
+      <div class="field"><label>Dịch sang</label><select name="target_language"><option value="vi">Tiếng Việt</option><option value="en">English</option><option value="zh">中文</option><option value="ja">日本語</option><option value="ko">한국어</option><option value="de">Deutsch</option><option value="fr">Français</option></select></div>
+    </div>
+    <div class="field"><label>Glossary tùy chọn (JSON)</label><textarea name="glossary_json" placeholder='{"wave function":"hàm sóng","eigenvalue":"trị riêng"}'></textarea></div>
+    <div class="checks"><label><input type="checkbox" checked disabled> Giữ công thức</label><label><input type="checkbox" checked disabled> Giữ hình ảnh</label><label><input type="checkbox" checked disabled> Giữ số liệu & đơn vị</label><label><input type="checkbox" checked disabled> Kiểm tra ký hiệu</label></div>
+    <button type="submit">DỊCH TÀI LIỆU</button>
+  </form>
+  <div id="status" class="status"><div id="msg">Đang tạo tác vụ...</div><div class="bar"><div id="fill" class="fill"></div></div><div id="downloads" class="downloads"></div></div>
+</div></div>
+<script>
+const form=document.getElementById('form'),statusBox=document.getElementById('status'),msg=document.getElementById('msg'),fill=document.getElementById('fill'),downloads=document.getElementById('downloads');
+form.addEventListener('submit',async(e)=>{e.preventDefault(); statusBox.style.display='block';downloads.innerHTML='';fill.style.width='2%';msg.textContent='Đang tải tài liệu lên...';
+ const fd=new FormData(form); const r=await fetch('/api/v1/jobs',{method:'POST',body:fd}); if(!r.ok){msg.textContent=await r.text();return} const job=await r.json(); poll(job.id);});
+async function poll(id){const r=await fetch('/api/v1/jobs/'+id);const j=await r.json();fill.style.width=(j.progress||0)+'%';msg.textContent=j.message+(j.error?' — '+j.error:'');
+ if(j.status==='completed'){const order=['pdf','bilingual_pdf','html','bilingual','md','json']; downloads.innerHTML=order.filter(x=>j.outputs&&j.outputs[x]).map(x=>`<a href="${j.outputs[x]}">${x.replace('_',' ').toUpperCase()}</a>`).join('');return}
+ if(j.status==='failed')return;setTimeout(()=>poll(id),1200)}
+if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js').catch(()=>{})}
+</script>
+</body>
+</html>

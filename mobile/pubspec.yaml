@@ -1,0 +1,19 @@
+name: scientific_translator_mobile
+description: Mobile client for Scientific Document Translator
+publish_to: none
+version: 0.1.0+1
+environment:
+  sdk: '>=3.4.0 <4.0.0'
+dependencies:
+  flutter:
+    sdk: flutter
+  http: ^1.2.2
+  file_picker: ^8.1.7
+  path: ^1.9.0
+  url_launcher: ^6.3.1
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+flutter:
+  uses-material-design: true

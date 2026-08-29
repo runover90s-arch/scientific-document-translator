@@ -1,0 +1,2 @@
+# Install separately because MinerU is large and may need GPU-specific dependencies.
+mineru[all]>=3.4.5,<4

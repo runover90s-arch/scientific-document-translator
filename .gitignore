@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+.venv/
+.env
+.pytest_cache/
+.DS_Store
+storage/jobs/
+backend/.coverage
+mobile/.dart_tool/
+mobile/build/
+mobile/android/.gradle/
+mobile/ios/Pods/
